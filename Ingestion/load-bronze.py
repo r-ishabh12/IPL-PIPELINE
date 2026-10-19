@@ -14,7 +14,7 @@ WHERE bronze.raw_matches.file_hash <> EXCLUDED.file_hash;
 """
 
 def main():
-    conn = psycopg2.connect(host="localhost", dbname="ipl", user="ipl", password="ipl")
+    conn = psycopg2.connect(host="localhost", port=5433, dbname="ipl", user="ipl", password="ipl")
     cur = conn.cursor()
     files = sorted(RAW.glob("*.json"))
     for f in files:

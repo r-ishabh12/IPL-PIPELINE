@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: ipl
       POSTGRES_DB: ipl
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./sql/01_schemas.sql:/docker-entrypoint-initdb.d/01_schemas.sql
