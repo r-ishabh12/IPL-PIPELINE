@@ -1,4 +1,7 @@
-import hashlib, json, pathlib, psycopg2
+import os, hashlib, json, pathlib, psycopg2
+from dotenv import load_dotenv
+
+load_dotenv()   #read .env file into the environment variable
 
 RAW = pathlib.Path("data/raw")
 
@@ -14,7 +17,13 @@ WHERE bronze.raw_matches.file_hash <> EXCLUDED.file_hash;
 """
 
 def main():
-    conn = psycopg2.connect(host="localhost", port=5433, dbname="ipl", user="ipl", password="ipl")
+    conn = psycopg2.connect(
+        host=os.getenv("DB_HOST"),
+        port=os.getenv("DB_PORT"), 
+        dbname=os.getenv("DB_NAME"), 
+        user=os.getenv("DB_USER"), 
+        password=os.getenv("DB_PASSWORD")
+        )
     cur = conn.cursor()
     files = sorted(RAW.glob("*.json"))
     for f in files:
