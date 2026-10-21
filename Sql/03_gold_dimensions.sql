@@ -28,3 +28,16 @@ WHERE franchise_name IS NULL;
 --     -- add the rest you confirmed
 -- ) AS m(team_name, franchise_name)
 -- WHERE t.team_name = m.team_name;
+
+CREATE TABLE IF NOT EXISTS gold.dim_venue (
+    venue_id   INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    venue_name TEXT NOT NULL UNIQUE,
+    city       TEXT
+);
+
+INSERT INTO gold.dim_venue (venue_name, city)
+SELECT DISTINCT ON (venue) venue, city
+FROM silver.matches
+WHERE venue IS NOT NULL
+ORDER BY venue, city NULLS LAST
+ON CONFLICT (venue_name) DO NOTHING;
