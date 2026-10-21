@@ -24,7 +24,8 @@ SELECT match_id,
        payload->'info'->'toss'->>'winner',
        payload->'info'->'toss'->>'decision',
        payload->'info'->'outcome'->>'winner',
-       payload->'info'->'event'->>'match_number'
+       payload->'info'->'event'->>'match_number',
+       trim(split_part(payload->'info'->>'venue', ',', 1))
 FROM bronze.raw_matches;
 
 INSERT INTO silver.deliveries
@@ -45,3 +46,17 @@ FROM bronze.raw_matches m,
      jsonb_array_elements(m.payload->'innings') WITH ORDINALITY AS inn(val, ord),
      jsonb_array_elements(inn.val->'overs') AS ov(val),
      jsonb_array_elements(ov.val->'deliveries') WITH ORDINALITY AS del(val, ord);
+
+     ALTER TABLE silver.matches ADD COLUMN IF NOT EXISTS venue_clean TEXT;
+
+TRUNCATE gold.dim_venue RESTART IDENTITY;
+
+UPDATE silver.matches
+SET venue_clean = trim(split_part(venue, ',', 1));
+
+INSERT INTO gold.dim_venue (venue_name, city)
+SELECT DISTINCT ON (venue_clean) venue_clean, city
+FROM silver.matches
+WHERE venue_clean IS NOT NULL
+ORDER BY venue_clean, city NULLS LAST
+ON CONFLICT (venue_name) DO NOTHING;
